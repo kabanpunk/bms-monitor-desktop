@@ -14,12 +14,105 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(997, 828)
+        MainWindow.resize(847, 828)
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setBold(True)
         font.setWeight(75)
         MainWindow.setFont(font)
+        MainWindow.setStyleSheet("QMainWindow {\n"
+"    background-color: #2b2b2b;\n"
+"}\n"
+"\n"
+"QGroupBox {\n"
+"    font: 75 12pt \"Segoe UI\";\n"
+"    color: #A9B7C6;\n"
+"    border: 1px solid #434F54;\n"
+"    margin-top: 10px; /* Уменьшен отступ сверху */\n"
+"    padding: 10px; /* Уменьшен padding */\n"
+"}\n"
+"\n"
+"QGroupBox::title {\n"
+"    subcontrol-origin: margin;\n"
+"    subcontrol-position: top center;\n"
+"    padding: 0 3px 0 3px;\n"
+"    color: #A9B7C6;\n"
+"}\n"
+"\n"
+"PlotWidget {\n"
+"    background-color: #323232;\n"
+"}\n"
+"\n"
+"QTableWidget {\n"
+"    border: none;\n"
+"    background-color: #323232;\n"
+"    gridline-color: #3c3f41;\n"
+"    color: #A9B7C6;\n"
+"}\n"
+"\n"
+"QHeaderView::section {\n"
+"    background-color: #323232;\n"
+"    color: #A9B7C6;\n"
+"    padding: 5px;\n"
+"    border-style: none;\n"
+"    border-bottom: 1px solid #3c3f41;\n"
+"    border-right: 1px solid #3c3f41;\n"
+"}\n"
+"\n"
+"QPushButton {\n"
+"    color: #A9B7C6;\n"
+"    background-color: #3C3F41;\n"
+"    border: 1px solid #2B2B2B;\n"
+"    padding: 10px;\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background-color: #2B2B2B;\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background-color: #4E4E4E;\n"
+"}\n"
+"\n"
+"QLabel {\n"
+"    color: #A9B7C6;\n"
+"    border: none;\n"
+"}\n"
+"\n"
+"QLineEdit {\n"
+"    background-color: #2B2B2B;\n"
+"    color: #A9B7C6;\n"
+"    border: 1px solid #3C3F41;\n"
+"}\n"
+"\n"
+"QMenuBar {\n"
+"    background-color: #2B2B2B;\n"
+"    border-bottom: 1px solid #3C3F41;\n"
+"}\n"
+"\n"
+"QMenuBar::item {\n"
+"    color: #A9B7C6;\n"
+"}\n"
+"\n"
+"QMenuBar::item:selected {\n"
+"    background-color: #3C3F41;\n"
+"}\n"
+"\n"
+"QMenu {\n"
+"    background-color: #2B2B2B;\n"
+"    color: #A9B7C6;\n"
+"    border: 1px solid #3C3F41;\n"
+"}\n"
+"\n"
+"QMenu::item:selected {\n"
+"    background-color: #3C3F41;\n"
+"}\n"
+"\n"
+"QStatusBar {\n"
+"    background-color: #2B2B2B;\n"
+"    color: #A9B7C6;\n"
+"}\n"
+"")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -28,8 +121,9 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setPointSize(12)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(9)
         self.groupBox_2.setFont(font)
         self.groupBox_2.setObjectName("groupBox_2")
         self.gridLayout_15 = QtWidgets.QGridLayout(self.groupBox_2)
@@ -49,8 +143,9 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setPointSize(12)
-        font.setBold(True)
-        font.setWeight(75)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(9)
         self.groupBox.setFont(font)
         self.groupBox.setObjectName("groupBox")
         self.gridLayout_13 = QtWidgets.QGridLayout(self.groupBox)
@@ -79,55 +174,13 @@ class Ui_MainWindow(object):
         self.tableWidget.verticalHeader().setMinimumSectionSize(15)
         self.gridLayout_13.addWidget(self.tableWidget, 0, 0, 1, 1)
         self.gridLayout_14.addWidget(self.groupBox, 0, 0, 1, 1)
-        self.groupBox_3 = QtWidgets.QGroupBox(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupBox_3.sizePolicy().hasHeightForWidth())
-        self.groupBox_3.setSizePolicy(sizePolicy)
-        self.groupBox_3.setMaximumSize(QtCore.QSize(16777215, 103))
-        font = QtGui.QFont()
-        font.setPointSize(12)
-        self.groupBox_3.setFont(font)
-        self.groupBox_3.setObjectName("groupBox_3")
-        self.gridLayout_12 = QtWidgets.QGridLayout(self.groupBox_3)
-        self.gridLayout_12.setObjectName("gridLayout_12")
-        self.label_time = QtWidgets.QLabel(self.groupBox_3)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setWeight(50)
-        self.label_time.setFont(font)
-        self.label_time.setObjectName("label_time")
-        self.gridLayout_12.addWidget(self.label_time, 0, 0, 1, 1)
-        self.label_amperage = QtWidgets.QLabel(self.groupBox_3)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setWeight(50)
-        self.label_amperage.setFont(font)
-        self.label_amperage.setObjectName("label_amperage")
-        self.gridLayout_12.addWidget(self.label_amperage, 1, 0, 1, 1)
-        self.label_time_out = QtWidgets.QLabel(self.groupBox_3)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setWeight(50)
-        self.label_time_out.setFont(font)
-        self.label_time_out.setObjectName("label_time_out")
-        self.gridLayout_12.addWidget(self.label_time_out, 0, 1, 1, 1)
-        self.label_amperage_out = QtWidgets.QLabel(self.groupBox_3)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font.setBold(False)
-        font.setWeight(50)
-        self.label_amperage_out.setFont(font)
-        self.label_amperage_out.setObjectName("label_amperage_out")
-        self.gridLayout_12.addWidget(self.label_amperage_out, 1, 1, 1, 1)
-        self.gridLayout_14.addWidget(self.groupBox_3, 1, 0, 1, 1)
         self.groupBox_9 = QtWidgets.QGroupBox(self.centralwidget)
         font = QtGui.QFont()
+        font.setFamily("Segoe UI")
         font.setPointSize(12)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(9)
         self.groupBox_9.setFont(font)
         self.groupBox_9.setObjectName("groupBox_9")
         self.gridLayout_11 = QtWidgets.QGridLayout(self.groupBox_9)
@@ -150,10 +203,49 @@ class Ui_MainWindow(object):
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
         self.gridLayout_14.addWidget(self.pushButton, 3, 0, 1, 1)
+        self.groupBox_3 = QtWidgets.QGroupBox(self.centralwidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox_3.sizePolicy().hasHeightForWidth())
+        self.groupBox_3.setSizePolicy(sizePolicy)
+        self.groupBox_3.setMaximumSize(QtCore.QSize(16777215, 103))
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI")
+        font.setPointSize(12)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(9)
+        self.groupBox_3.setFont(font)
+        self.groupBox_3.setObjectName("groupBox_3")
+        self.gridLayout = QtWidgets.QGridLayout(self.groupBox_3)
+        self.gridLayout.setObjectName("gridLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label_time = QtWidgets.QLabel(self.groupBox_3)
+        self.label_time.setObjectName("label_time")
+        self.verticalLayout.addWidget(self.label_time)
+        self.label_amperage = QtWidgets.QLabel(self.groupBox_3)
+        self.label_amperage.setObjectName("label_amperage")
+        self.verticalLayout.addWidget(self.label_amperage)
+        self.horizontalLayout.addLayout(self.verticalLayout)
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.label_time_out = QtWidgets.QLabel(self.groupBox_3)
+        self.label_time_out.setObjectName("label_time_out")
+        self.verticalLayout_5.addWidget(self.label_time_out)
+        self.label_amperage_out = QtWidgets.QLabel(self.groupBox_3)
+        self.label_amperage_out.setObjectName("label_amperage_out")
+        self.verticalLayout_5.addWidget(self.label_amperage_out)
+        self.horizontalLayout.addLayout(self.verticalLayout_5)
+        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
+        self.gridLayout_14.addWidget(self.groupBox_3, 1, 0, 1, 1)
         self.horizontalLayout_3.addLayout(self.gridLayout_14)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 997, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 847, 21))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
@@ -186,13 +278,13 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "BMS Hub"))
         self.groupBox_2.setTitle(_translate("MainWindow", "График"))
         self.groupBox.setTitle(_translate("MainWindow", "Ячейки"))
+        self.groupBox_9.setTitle(_translate("MainWindow", "Порог"))
+        self.pushButton.setText(_translate("MainWindow", "НАЧАТЬ ЦИКЛ"))
         self.groupBox_3.setTitle(_translate("MainWindow", "Общее"))
         self.label_time.setText(_translate("MainWindow", "Время:"))
         self.label_amperage.setText(_translate("MainWindow", "Ток:"))
         self.label_time_out.setText(_translate("MainWindow", "_"))
         self.label_amperage_out.setText(_translate("MainWindow", "_"))
-        self.groupBox_9.setTitle(_translate("MainWindow", "Порог"))
-        self.pushButton.setText(_translate("MainWindow", "НАЧАТЬ ЦИКЛ"))
         self.menu.setTitle(_translate("MainWindow", "Данные"))
         self.action.setText(_translate("MainWindow", "Выгрузить данные с устройства"))
         self.action_2.setText(_translate("MainWindow", "Экспорт"))

@@ -1,19 +1,29 @@
 import requests as requests
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QFileDialog
-import sys, requests, json
+import sys, json
 import datetime
-
 
 from pyqtgraph import mkPen
 from pyqtgraph.graphicsItems.ScatterPlotItem import Symbols
 
-from qt_graph.BoundTargetItem import BoundTargetItem
+from connection_input_form import ConnectionInputForm
 from resources.MainWindow_ui import Ui_MainWindow
 from random import randint
 import pyqtgraph as pg
 
+from serial_thread import SerialThread
 from widgets.listen_websocket import ListenWebsocket
+
+from byte_operations import int16_into_two_ints, two_ints_into16
+
+from enum import Enum
+
+
+class PackageCodes(Enum):
+    SETTING_THRESHOLD = 10
+    ERASE_FILE = 11
+    DOWNLOAD = 12
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -31,7 +41,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.setWindowTitle("PyQt5 QTableView")
         # self.setGeometry(500, 400, 500, 300)
         self.setup_cells_table()
-        self.setup_main_table()
 
         self.__ui.action_3.triggered.connect(self.__action_import)
         self.__ui.action_4.triggered.connect(self.__connect)
@@ -39,60 +48,55 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui.action.triggered.connect(self.__download)
         self.__ui.pushButton.clicked.connect(self.__start_cycle)
 
-        self.data = {}
+        self.__serial_thread: SerialThread = SerialThread()
 
+        self.data = {}
         self.show()
 
+    def __handle_data_received(self, data):
+        print('Received form serial:', list(map(int, data)), type(data))
+
+    def __closeEvent(self, event):
+        self.__serial_thread.stop()
+        self.__serial_thread.wait()
+
     def __start_cycle(self):
-        treshold = float(self.__ui.lineEdit_3.text())
-        self.__thread.send(
-            f'{{"threshold": {self.__ui.lineEdit_3.text()}}}')
-        print('start')
+        threshold = int(round(float(self.__ui.lineEdit_3.text()), 2) * 100)
+        h, l = int16_into_two_ints(threshold)
+        # TODO: проверь тут не путается ли h, l
+        self.__serial_thread.write([PackageCodes.SETTING_THRESHOLD.value, l, h])
 
     def __erase_sd(self):
         print('erasing sd card...')
-        print(requests.get('http://192.168.4.1/del'))
+        self.__serial_thread.write([PackageCodes.ERASE_FILE.value])
+        #print(requests.get('http://192.168.4.1/del'))
 
     def __connect(self):
-        def url_checker(url):
-            try:
-                # Get Url
-                get = requests.get(url)
-                # if the request succeeds
-                if get.status_code == 200:
-                    print (f"{url}: is reachable")
-                    return True
-                else:
-                    print (f"{url}: is Not reachable, status_code: {get.status_code}")
-                    return False
+        self.__connection_input_form = ConnectionInputForm()
+        self.__connection_input_form.received_connection_data.connect(self.__received_connection_data)
+        self.__connection_input_form.show()
 
-            # Exception
-            except requests.exceptions.RequestException as e:
-                # print URL with Errs
-                print (f"{url}: is Not reachable \nErr: {e}")
-                return False
-
-        if url_checker('http://192.168.4.1/'):
-            self.__thread = ListenWebsocket(url='ws://192.168.4.1/ws')
-            self.__thread.on_message_signal.connect(self.__on_message)
-            self.__thread.start()
+    def __received_connection_data(self, port, baud_rate):
+        self.__serial_thread = SerialThread(port, baud_rate)
+        self.__serial_thread.data_received.connect(self.__handle_data_received)
+        self.__serial_thread.start()
 
     def __on_message(self, message):
         message_json = json.loads(message)
         amperage = float(message_json['amperage'])
         current_time = float(message_json['current_time'])
         dt = datetime.timedelta(hours=current_time)
-        self.__ui.tableWidget_2.setItem(1, 0, QTableWidgetItem(str(dt).split('.')[0]))
-        self.__ui.tableWidget_2.setItem(1, 1, QTableWidgetItem(str(round(amperage, 3))))
+        self.__ui.label_time_out.setText(str(round(current_time, 3)))
+        self.__ui.label_amperage_out.setText(str(round(amperage, 3)))
         for i in range(1, 17):
             self.__ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(i)))
-            self.__ui.tableWidget.setItem(i, 1, QTableWidgetItem(str( round(message_json['voltages'][i-1], 3) )))
-            self.__ui.tableWidget.setItem(i, 2, QTableWidgetItem(str( round(message_json['whs'][i-1], 3) )))
+            self.__ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(round(message_json['voltages'][i - 1], 3))))
+            self.__ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(round(message_json['whs'][i - 1], 3))))
         print(f'[main]: {message_json}')
 
     def __download(self):
-
-
+        self.__serial_thread.write([PackageCodes.DOWNLOAD.value])
+        return
         local_filename = 'data.bdt'
         url = 'http://192.168.4.1/download'
 
@@ -114,7 +118,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     c = 100 * dl / total_size
                     # write current % to console, pause for .1ms, then flush console
                     print(f"\r{round(c, 4)}%")
-        #print('DOWNLOAD ACTION')
+        # print('DOWNLOAD ACTION')
 
     def __action_import(self):
         self.data = {}
@@ -164,49 +168,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.__ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(i)))
             self.__ui.tableWidget.setItem(i, 1, QTableWidgetItem('-'))
             self.__ui.tableWidget.setItem(i, 2, QTableWidgetItem('-'))
-
-    def __create_point(
-            self,
-            curve: pg.PlotDataItem,
-            pos=None,
-    ) -> BoundTargetItem:
-        curves = [p.curve for p in self.__points] + [curve]
-        if len(curves) != len(set(curves)):
-            print('fuck')
-            return BoundTargetItem(curve)
-
-        # TODO: цвета, символы и прочее должны быть вынесены в конфиг файлы
-        point = BoundTargetItem(
-            curve, pos,
-            size=20,
-            symbol=Symbols[self.__options_widget.point_symbol],
-            pen=self.__options_widget.point_color,
-            label=lambda _, y: f"{y:.4f}",
-            labelOpts={
-                "offset": QtCore.QPointF(0, -20),
-                "color": "#004DFF"
-            }
-        )
-        point.update_pos()
-
-        if self.__options_widget.ox_fixation:
-            point.fix_on_ox()
-        else:
-            point.free_movement_on_ox()
-
-        self.__points.append(point)
-        return point
-
-    def setup_main_table(self):
-        self.__ui.tableWidget_2.setRowCount(2)
-        self.__ui.tableWidget_2.setColumnCount(2)
-
-        self.__ui.tableWidget_2.setItem(0, 0, QTableWidgetItem("Время"))
-        self.__ui.tableWidget_2.setItem(0, 1, QTableWidgetItem("Ток"))
-        self.__ui.tableWidget_2.setColumnWidth(0, 154)
-
-        self.__ui.tableWidget_2.setItem(1, 0, QTableWidgetItem('-'))
-        self.__ui.tableWidget_2.setItem(1, 1, QTableWidgetItem('-'))
 
 
 def main():

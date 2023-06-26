@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>997</width>
+    <width>847</width>
     <height>828</height>
    </rect>
   </property>
@@ -20,6 +20,101 @@
   <property name="windowTitle">
    <string>BMS Hub</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+    background-color: #2b2b2b;
+}
+
+QGroupBox {
+    font: 75 12pt &quot;Segoe UI&quot;;
+    color: #A9B7C6;
+    border: 1px solid #434F54;
+    margin-top: 10px; /* Уменьшен отступ сверху */
+    padding: 10px; /* Уменьшен padding */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 3px 0 3px;
+    color: #A9B7C6;
+}
+
+PlotWidget {
+    background-color: #323232;
+}
+
+QTableWidget {
+    border: none;
+    background-color: #323232;
+    gridline-color: #3c3f41;
+    color: #A9B7C6;
+}
+
+QHeaderView::section {
+    background-color: #323232;
+    color: #A9B7C6;
+    padding: 5px;
+    border-style: none;
+    border-bottom: 1px solid #3c3f41;
+    border-right: 1px solid #3c3f41;
+}
+
+QPushButton {
+    color: #A9B7C6;
+    background-color: #3C3F41;
+    border: 1px solid #2B2B2B;
+    padding: 10px;
+}
+
+QPushButton:hover {
+    background-color: #2B2B2B;
+}
+
+QPushButton:pressed {
+    background-color: #4E4E4E;
+}
+
+QLabel {
+    color: #A9B7C6;
+    border: none;
+}
+
+QLineEdit {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+    border: 1px solid #3C3F41;
+}
+
+QMenuBar {
+    background-color: #2B2B2B;
+    border-bottom: 1px solid #3C3F41;
+}
+
+QMenuBar::item {
+    color: #A9B7C6;
+}
+
+QMenuBar::item:selected {
+    background-color: #3C3F41;
+}
+
+QMenu {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+    border: 1px solid #3C3F41;
+}
+
+QMenu::item:selected {
+    background-color: #3C3F41;
+}
+
+QStatusBar {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+}
+</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_3">
     <item>
@@ -28,8 +123,9 @@
        <font>
         <family>Segoe UI</family>
         <pointsize>12</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
+        <weight>9</weight>
+        <italic>false</italic>
+        <bold>false</bold>
        </font>
       </property>
       <property name="title">
@@ -56,8 +152,9 @@
          <font>
           <family>Segoe UI</family>
           <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
+          <weight>9</weight>
+          <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="title">
@@ -108,93 +205,15 @@
         </layout>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QGroupBox" name="groupBox_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>103</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="title">
-         <string>Общее</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_12">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_time">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Время:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_amperage">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>Ток:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLabel" name="label_time_out">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>_</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="label_amperage_out">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-             <weight>50</weight>
-             <bold>false</bold>
-            </font>
-           </property>
-           <property name="text">
-            <string>_</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
       <item row="2" column="0">
        <widget class="QGroupBox" name="groupBox_9">
         <property name="font">
          <font>
+          <family>Segoe UI</family>
           <pointsize>12</pointsize>
+          <weight>9</weight>
+          <italic>false</italic>
+          <bold>false</bold>
          </font>
         </property>
         <property name="title">
@@ -241,6 +260,76 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>103</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Segoe UI</family>
+          <pointsize>12</pointsize>
+          <weight>9</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string>Общее</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <item>
+              <widget class="QLabel" name="label_time">
+               <property name="text">
+                <string>Время:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_amperage">
+               <property name="text">
+                <string>Ток:</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QLabel" name="label_time_out">
+               <property name="text">
+                <string>_</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_amperage_out">
+               <property name="text">
+                <string>_</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -250,7 +339,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>997</width>
+     <width>847</width>
      <height>21</height>
     </rect>
    </property>
