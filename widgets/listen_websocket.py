@@ -24,6 +24,9 @@ class ListenWebsocket(QtCore.QThread):
 
         self.__ws.run_forever()
 
+    def send(self, msg):
+        self.__ws.send(msg)
+
 
     def on_message(self, ws, message):
         self.on_message_signal.emit(message)

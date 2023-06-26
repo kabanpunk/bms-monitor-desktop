@@ -37,10 +37,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui.action_4.triggered.connect(self.__connect)
         self.__ui.action_5.triggered.connect(self.__erase_sd)
         self.__ui.action.triggered.connect(self.__download)
+        self.__ui.pushButton.clicked.connect(self.__start_cycle)
 
         self.data = {}
 
         self.show()
+
+    def __start_cycle(self):
+        treshold = float(self.__ui.lineEdit_3.text())
+        self.__thread.send(
+            f'{{"threshold": {self.__ui.lineEdit_3.text()}}}')
+        print('start')
 
     def __erase_sd(self):
         print('erasing sd card...')
@@ -74,7 +81,8 @@ class MainWindow(QtWidgets.QMainWindow):
         message_json = json.loads(message)
         amperage = float(message_json['amperage'])
         current_time = float(message_json['current_time'])
-        self.__ui.tableWidget_2.setItem(1, 0, QTableWidgetItem(str(datetime.timedelta(hours=current_time))))
+        dt = datetime.timedelta(hours=current_time)
+        self.__ui.tableWidget_2.setItem(1, 0, QTableWidgetItem(str(dt).split('.')[0]))
         self.__ui.tableWidget_2.setItem(1, 1, QTableWidgetItem(str(round(amperage, 3))))
         for i in range(1, 17):
             self.__ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(i)))
