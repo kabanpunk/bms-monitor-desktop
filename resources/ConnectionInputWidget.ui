@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>260</width>
+    <height>117</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Подключение</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+    background-color: #2b2b2b;
+}
+
+QGroupBox {
+    font: 75 12pt &quot;Segoe UI&quot;;
+    color: #A9B7C6;
+    border: 1px solid #434F54;
+    margin-top: 10px; /* Уменьшен отступ сверху */
+    padding: 10px; /* Уменьшен padding */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center;
+    padding: 0 3px 0 3px;
+    color: #A9B7C6;
+}
+
+PlotWidget {
+    background-color: #323232;
+}
+
+QTableWidget {
+    border: none;
+    background-color: #323232;
+    gridline-color: #3c3f41;
+    color: #A9B7C6;
+}
+
+QHeaderView::section {
+    background-color: #323232;
+    color: #A9B7C6;
+    padding: 5px;
+    border-style: none;
+    border-bottom: 1px solid #3c3f41;
+    border-right: 1px solid #3c3f41;
+}
+
+QPushButton {
+    color: #A9B7C6;
+    background-color: #3C3F41;
+    border: 1px solid #2B2B2B;
+    padding: 10px;
+}
+
+QPushButton:hover {
+    background-color: #2B2B2B;
+}
+
+QPushButton:pressed {
+    background-color: #4E4E4E;
+}
+
+QLabel {
+    color: #A9B7C6;
+    border: none;
+}
+
+QLineEdit {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+    border: 1px solid #3C3F41;
+}
+
+QComboBox {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+    border: 1px solid #3C3F41;
+    padding: 3px;
+    min-width: 75px;
+    selection-background-color: #4E4E4E;
+    selection-color: #A9B7C6;
+}
+
+
+QComboBox QAbstractItemView {
+    background-color: #2B2B2B;
+    border: 1px solid #3C3F41;
+    color: #A9B7C6;
+    selection-background-color: #4E4E4E;
+    selection-color: #A9B7C6;
+}
+
+QComboBox QAbstractItemView::item {
+    height: 20px;
+    padding: 2px 10px;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #4E4E4E;
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #3C3F41;
+}
+
+QMenuBar {
+    background-color: #2B2B2B;
+    border-bottom: 1px solid #3C3F41;
+}
+
+QMenuBar::item {
+    color: #A9B7C6;
+}
+
+QMenuBar::item:selected {
+    background-color: #3C3F41;
+}
+
+QMenu {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+    border: 1px solid #3C3F41;
+}
+
+QMenu::item:selected {
+    background-color: #3C3F41;
+}
+
+QStatusBar {
+    background-color: #2B2B2B;
+    color: #A9B7C6;
+}
+</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_port">
+         <property name="text">
+          <string>Порт</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_baudrate">
+         <property name="text">
+          <string>Скорость передачи</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="1">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QComboBox" name="comboBox_port"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBox_baudrate">
+         <property name="currentText">
+          <string>9600</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>1200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4800</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>9600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>14400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>19200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>38400</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>57600</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>115200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>128000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>256000</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="pushButton_connect">
+     <property name="text">
+      <string>Соеденить</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(847, 828)
+        MainWindow.resize(657, 696)
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setBold(True)
@@ -157,7 +157,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
         self.tableWidget.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
-        font.setPointSize(10)
+        font.setPointSize(11)
         font.setBold(True)
         font.setWeight(75)
         self.tableWidget.setFont(font)
@@ -245,7 +245,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addLayout(self.gridLayout_14)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 847, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 657, 21))
         self.menubar.setObjectName("menubar")
         self.menu = QtWidgets.QMenu(self.menubar)
         self.menu.setObjectName("menu")
