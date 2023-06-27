@@ -21,4 +21,4 @@ class CustomQTableWidget(QTableWidget):
             for i in range(self.rowCount()):
                 self.set_row_color(i, self.palette().color(self.palette().Background))
             if row > 0:
-                self.set_row_color(row, QColor(60, 60, 60, 127))
+                self.set_row_color(row, QColor(140, 140, 140, 127))

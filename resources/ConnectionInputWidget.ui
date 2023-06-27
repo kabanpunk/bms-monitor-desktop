@@ -174,8 +174,8 @@ QStatusBar {
        </item>
        <item>
         <widget class="QComboBox" name="comboBox_baudrate">
-         <property name="currentText">
-          <string>9600</string>
+         <property name="currentIndex">
+           <number>3</number>
          </property>
          <item>
           <property name="text">

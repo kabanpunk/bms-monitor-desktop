@@ -1,6 +1,7 @@
 import requests as requests
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QFileDialog, \
+    QProgressBar
 import sys, json
 import datetime
 
@@ -8,12 +9,12 @@ from pyqtgraph import mkPen
 from pyqtgraph.graphicsItems.ScatterPlotItem import Symbols
 
 from connection_input_form import ConnectionInputForm
+from progress_bar_dialog import ProgressDialog
 from resources.MainWindow_ui import Ui_MainWindow
 from random import randint
 import pyqtgraph as pg
 
 from serial_thread import SerialThread
-from widgets.listen_websocket import ListenWebsocket
 
 from byte_operations import int16_into_two_ints, two_ints_into16
 
@@ -23,7 +24,16 @@ from enum import Enum
 class PackageCodes(Enum):
     SETTING_THRESHOLD = 10
     ERASE_FILE = 11
-    DOWNLOAD = 12
+    INIT_DOWNLOAD = 12
+    LOGGING = 13
+    ERROR = 14
+    REQUEST_DATA = 15
+    DATA = 16
+    FILE_SECTION = 17
+    END_DOWNLOAD = 18
+    START_DOWNLOAD = 19
+    FILE_SIZE = 20
+    TEST = 21
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -35,7 +45,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui = Ui_MainWindow()
         self.__ui.setupUi(self)
 
-        self.__thread = ListenWebsocket(url='')
+        self.__local_filename = 'data.bdt'
+        self.__file_size = 0
+        self.__already_downloaded = 0
+        self.__buffer: bytes = b''
+
         self.__is_connected = False
 
         # self.setWindowTitle("PyQt5 QTableView")
@@ -45,6 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui.action_3.triggered.connect(self.__action_import)
         self.__ui.action_4.triggered.connect(self.__connect)
         self.__ui.action_5.triggered.connect(self.__erase_sd)
+        self.__ui.action_2.triggered.connect(self.__test)
         self.__ui.action.triggered.connect(self.__download)
         self.__ui.pushButton.clicked.connect(self.__start_cycle)
 
@@ -52,24 +67,51 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.data = {}
         self.show()
+    def __test(self):
+        self.__serial_thread.write({
+            "code": PackageCodes.TEST.value
+        })
+    def __handle_json_data_received(self, data: dict):
+        print('Received form serial:', data, type(data))
+        if data["code"] == PackageCodes.DATA.value:
+            self.__update_table(data)
+        elif data["code"] == PackageCodes.START_DOWNLOAD.value:
+            self.__serial_thread.set_mode_to_bytes()
+        elif data["code"] == PackageCodes.FILE_SIZE.value:
+            print('WTF', data)
+            self.__file_size = data["file_size"]
 
-    def __handle_data_received(self, data):
-        print('Received form serial:', list(map(int, data)), type(data))
+    def __handle_bytes_data_received(self, data: bytes):
+        # TODO: Сепарировать логику загрузки
+        self.__already_downloaded += len(data)
+        self.progress_dialog.update_progress(round((self.__already_downloaded - 1) / self.__file_size * 100))
+        self.__buffer += data
+        if data[-1] == 0xa0:
+            print('STOPED')
+            self.__serial_thread.set_mode_to_json()
+            with open(self.__local_filename, 'wb') as file:
+                file.write(self.__buffer[:-1])
+            self.__buffer = b''
+            self.__already_downloaded = 0
+            self.__file_size = 0
+
 
     def __closeEvent(self, event):
         self.__serial_thread.stop()
         self.__serial_thread.wait()
 
     def __start_cycle(self):
-        threshold = int(round(float(self.__ui.lineEdit_3.text()), 2) * 100)
-        h, l = int16_into_two_ints(threshold)
-        # TODO: проверь тут не путается ли h, l
-        self.__serial_thread.write([PackageCodes.SETTING_THRESHOLD.value, l, h])
+        threshold = float(self.__ui.lineEdit_3.text())
+        self.__serial_thread.write({
+            "code": PackageCodes.SETTING_THRESHOLD.value,
+            "threshold": threshold
+        })
 
     def __erase_sd(self):
         print('erasing sd card...')
-        self.__serial_thread.write([PackageCodes.ERASE_FILE.value])
-        #print(requests.get('http://192.168.4.1/del'))
+        self.__serial_thread.write({
+            "code": PackageCodes.ERASE_FILE.value
+        })
 
     def __connect(self):
         self.__connection_input_form = ConnectionInputForm()
@@ -78,47 +120,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __received_connection_data(self, port, baud_rate):
         self.__serial_thread = SerialThread(port, baud_rate)
-        self.__serial_thread.data_received.connect(self.__handle_data_received)
+        self.__serial_thread.json_data_received.connect(self.__handle_json_data_received)
+        self.__serial_thread.bytes_data_received.connect(self.__handle_bytes_data_received)
         self.__serial_thread.start()
 
-    def __on_message(self, message):
-        message_json = json.loads(message)
-        amperage = float(message_json['amperage'])
-        current_time = float(message_json['current_time'])
-        dt = datetime.timedelta(hours=current_time)
+    def __update_table(self, data: dict):
+        amperage = float(data['amperage'])
+        current_time = float(data['current_time'])
         self.__ui.label_time_out.setText(str(round(current_time, 3)))
         self.__ui.label_amperage_out.setText(str(round(amperage, 3)))
         for i in range(1, 17):
             self.__ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(i)))
-            self.__ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(round(message_json['voltages'][i - 1], 3))))
-            self.__ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(round(message_json['whs'][i - 1], 3))))
-        print(f'[main]: {message_json}')
+            self.__ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(round(data['voltages'][i - 1], 3))))
+            self.__ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(round(data['whs'][i - 1], 3))))
 
     def __download(self):
-        self.__serial_thread.write([PackageCodes.DOWNLOAD.value])
-        return
-        local_filename = 'data.bdt'
-        url = 'http://192.168.4.1/download'
+        self.__serial_thread.write({
+            "code": PackageCodes.INIT_DOWNLOAD.value
+        })
 
-        with requests.get(url, stream=True) as r:
-            print(r)
-            print("START DOWNLAOD")
-            with open(local_filename, 'wb') as file:
-                # Get the total size, in bytes, from the response header
-                total_size = int(r.headers.get('Content-Length'))
-                print('total_size: ', total_size)
-                # Define the size of the chunk to iterate over (Mb)
-                chunk_size = 4096
-                dl = 0
-                # iterate over every chunk and calculate % of total
-                for i, chunk in enumerate(r.iter_content(chunk_size=chunk_size)):
-                    dl += len(chunk)
-                    file.write(chunk)
-                    # calculate current percentage
-                    c = 100 * dl / total_size
-                    # write current % to console, pause for .1ms, then flush console
-                    print(f"\r{round(c, 4)}%")
-        # print('DOWNLOAD ACTION')
+        self.progress_dialog = ProgressDialog()
+        self.progress_dialog.show()
 
     def __action_import(self):
         self.data = {}

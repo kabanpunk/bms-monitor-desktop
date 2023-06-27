@@ -21,7 +21,42 @@
    <string>BMS Hub</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow {
+   <string notr="true">
+    QScrollBar:horizontal {
+    border: none;
+    background: #2b2b2b;
+    height: 15px;
+    margin: 0px;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #2b2b2b;
+    width: 15px;
+    margin: 0px;
+}
+
+QScrollBar::handle {
+    background: #51565d;
+}
+
+QScrollBar::handle:hover {
+    background: #787878;
+}
+
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal,
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+
+    QMainWindow {
     background-color: #2b2b2b;
 }
 
