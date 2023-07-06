@@ -4,11 +4,11 @@ import jsons
 import requests as requests
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QFileDialog, \
-    QProgressBar, QMessageBox
+    QProgressBar, QMessageBox, QGraphicsDropShadowEffect
 import sys, json
 import datetime
 
-from pyqtgraph import mkPen, DateAxisItem, LegendItem
+from pyqtgraph import mkPen, DateAxisItem, LegendItem, PlotDataItem
 from pyqtgraph.graphicsItems.ScatterPlotItem import Symbols
 
 from connection_input_form import ConnectionInputForm
@@ -48,11 +48,13 @@ def timestamp(dt: datetime):
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setLabel(text='Time', units=None)
         self.enableAutoSIPrefix(False)
 
     def tickStrings(self, values, scale, spacing):
-        return [datetime.datetime.fromtimestamp(value).strftime("%H:%M:%S") for value in values]
+        try:
+            return [datetime.datetime.fromtimestamp(value).strftime("%H:%M:%S") for value in values]
+        except:
+            return [""]
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -64,11 +66,32 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui = Ui_MainWindow()
         self.__ui.setupUi(self)
 
-        self.__ui.plot_widget.showGrid(x=True, y=True)
-        self.__ui.plot_widget.setAxisItems({'bottom': TimeAxisItem(orientation='bottom')})
+        # creating a QGraphicsDropShadowEffect object
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(15)
+
+        # Создаем GraphicsLayoutWidget
+        # Создаем и добавляем LabelItem
+        self.__wh_label = pg.LabelItem(justify='right')
+        self.__wh_label_style_promt = "<span style='font-size: 12pt; color: #A9B7C6;'>WH: {}</span>"
+        self.__wh_label.setText(self.__wh_label_style_promt.format(''))
+        self.__ui.win_plot_widget.addItem(self.__wh_label)
+        # Создаем и добавляем PlotWidget
+        self.__plot_widget = self.__ui.win_plot_widget.addPlot(row=1, col=0)
+        self.__plot_widget.setAxisItems({'bottom': TimeAxisItem(orientation='bottom')})
+        self.__plot_widget.setLabel('bottom', "Время")
+        self.__plot_widget.setLabel('left', "Напряжение")
+        self.__plot_widget.showGrid(x=True, y=True, alpha=1)
+
+        self.__ui.win_plot_widget.setBackground("#2b2b2b")
+
         self.__x_range = 0
 
-        self.__scatter = CustomScatterPlot()
+        self.__scatter = CustomScatterPlot(
+        )
+        self.__plot = PlotDataItem()
+        self.__plot_widget.addItem(self.__plot)
+        self.__plot_widget.addItem(self.__scatter)
 
         self.__local_filename = 'data.bdt'
 
@@ -88,7 +111,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.__serial_thread: SerialThread = SerialThread()
 
-        self.__data = {}
+        self.__data = {
+        }
         self.show()
 
     def __display_options(self):
@@ -133,11 +157,20 @@ class MainWindow(QtWidgets.QMainWindow):
         points = self.__scatter.pointsAt(ev.pos())
         if len(points) > 0:
             point = points[0]
-            self.__ui.label_WH_out.setText(str(point.data()))
+            print(point)
+            self.__wh_label.setText(self.__wh_label_style_promt.format(point.data()))
 
     def __add_scatter_plot(self, row):
+        self.__plot_widget.removeItem(self.__plot)
+        self.__plot_widget.removeItem(self.__scatter)
+
         self.__scatter = CustomScatterPlot(
-            size=20, brush=pg.mkBrush(30, 255, 35, 255))
+            hoverable=True,
+            hoverPen=pg.mkPen('w'),
+            hoverSize=20,
+            size=15,
+            brush=pg.mkBrush(118, 255, 164, 255)
+        )
         self.__scatter.setData([
             {
                 'pos': [x, y],
@@ -145,8 +178,9 @@ class MainWindow(QtWidgets.QMainWindow):
             }
             for x, y, d in zip(self.__data[row][0], self.__data[row][1], self.__data[row][2])
         ])
-        self.__ui.plot_widget.plot(self.__data[row][0], self.__data[row][1])
-        self.__ui.plot_widget.addItem(self.__scatter)
+        self.__plot = PlotDataItem(self.__data[row][0], self.__data[row][1])
+        self.__plot_widget.addItem(self.__plot)
+        self.__plot_widget.addItem(self.__scatter)
         self.__scatter.sigClicked.connect(self.__point_clicked)
 
     def __handle_data_received(self, data_frame: DataFrame):
@@ -158,8 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 file.write(json_str + '\n')
         self.__append_data_frame_to_cache(data_frame)
 
-        self.__ui.plot_widget.clear()
-
+        # self.__ui.plot_widget.clear()
         row = self.__ui.tableWidget.currentRow()
         row = 1 if row < 1 else row
         self.__add_scatter_plot(row)
@@ -233,7 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def table_clicked(self, item):
         row = item.row()
-        self.__ui.plot_widget.clear()
+        # self.__ui.plot_widget.clear()
         self.__ui.tableWidget.selectRow(row)
         self.__add_scatter_plot(row)
 

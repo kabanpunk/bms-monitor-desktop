@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>448</width>
-    <height>407</height>
+    <width>904</width>
+    <height>704</height>
    </rect>
   </property>
   <property name="font">
@@ -66,6 +66,7 @@ QGroupBox {
     border: 1px solid #434F54;
     margin-top: 10px; /* Уменьшен отступ сверху */
     padding: 10px; /* Уменьшен padding */
+    border-radius: 3px;
 }
 
 QGroupBox::title {
@@ -80,10 +81,11 @@ PlotWidget {
 }
 
 QTableWidget {
-    border: none;
+    border: 10px;
     background-color: #323232;
     gridline-color: #3c3f41;
     color: #A9B7C6;
+    border-radius: 5px;
 }
 
 QHeaderView::section {
@@ -100,14 +102,17 @@ QPushButton {
     background-color: #3C3F41;
     border: 1px solid #2B2B2B;
     padding: 10px;
+    border-radius: 5px;
 }
 
 QPushButton:hover {
     background-color: #2B2B2B;
+     border-radius: 5px;
 }
 
 QPushButton:pressed {
     background-color: #4E4E4E;
+     border-radius: 5px;
 }
 
 QLabel {
@@ -148,6 +153,7 @@ QStatusBar {
     background-color: #2B2B2B;
     color: #A9B7C6;
 }
+
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -167,52 +173,8 @@ QStatusBar {
        <string>График</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
-       <item row="1" column="0">
-        <widget class="PlotWidget" name="plot_widget" native="true"/>
-       </item>
        <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_4">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Segoe UI</family>
-           <pointsize>12</pointsize>
-           <weight>9</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="title">
-          <string/>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_WH">
-            <property name="text">
-             <string>WH</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="label_WH_out">
-            <property name="text">
-             <string>_</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
+        <widget class="GraphicsLayoutWidget" name="win_plot_widget" native="true"/>
        </item>
       </layout>
      </widget>
@@ -418,8 +380,8 @@ QStatusBar {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>448</width>
-     <height>18</height>
+     <width>904</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -472,7 +434,7 @@ QStatusBar {
    <header>widgets/custom_table_widget</header>
   </customwidget>
   <customwidget>
-   <class>PlotWidget</class>
+   <class>GraphicsLayoutWidget</class>
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
    <container>1</container>
