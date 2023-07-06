@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>657</width>
-    <height>696</height>
+    <width>448</width>
+    <height>407</height>
    </rect>
   </property>
   <property name="font">
@@ -167,8 +167,52 @@ QStatusBar {
        <string>График</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_15">
-       <item row="0" column="0">
+       <item row="1" column="0">
         <widget class="PlotWidget" name="plot_widget" native="true"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Segoe UI</family>
+           <pointsize>12</pointsize>
+           <weight>9</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_WH">
+            <property name="text">
+             <string>WH</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_WH_out">
+            <property name="text">
+             <string>_</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -235,43 +279,6 @@ QStatusBar {
            <attribute name="verticalHeaderMinimumSectionSize">
             <number>15</number>
            </attribute>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QGroupBox" name="groupBox_9">
-        <property name="font">
-         <font>
-          <family>Segoe UI</family>
-          <pointsize>12</pointsize>
-          <weight>9</weight>
-          <italic>false</italic>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="title">
-         <string>Порог</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout_11">
-         <item row="0" column="0" alignment="Qt::AlignTop">
-          <widget class="QLineEdit" name="lineEdit_3">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-           </property>
           </widget>
          </item>
         </layout>
@@ -365,6 +372,43 @@ QStatusBar {
         </layout>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QGroupBox" name="groupBox_9">
+        <property name="font">
+         <font>
+          <family>Segoe UI</family>
+          <pointsize>12</pointsize>
+          <weight>9</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="title">
+         <string>Порог</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_11">
+         <item row="0" column="0" alignment="Qt::AlignTop">
+          <widget class="QLineEdit" name="lineEdit_3">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
@@ -374,19 +418,18 @@ QStatusBar {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>657</width>
-     <height>21</height>
+     <width>448</width>
+     <height>18</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
     <property name="title">
      <string>Данные</string>
     </property>
-    <addaction name="action"/>
     <addaction name="action_2"/>
     <addaction name="action_3"/>
     <addaction name="action_4"/>
-    <addaction name="action_5"/>
+    <addaction name="action_6"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -414,6 +457,11 @@ QStatusBar {
   <action name="action_5">
    <property name="text">
     <string>Очистить файл</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>Параметры просмотра</string>
    </property>
   </action>
  </widget>

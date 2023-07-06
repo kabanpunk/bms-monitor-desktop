@@ -1,20 +1,25 @@
+import time
+
+import jsons
 import requests as requests
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QFileDialog, \
-    QProgressBar
+    QProgressBar, QMessageBox
 import sys, json
 import datetime
 
-from pyqtgraph import mkPen
+from pyqtgraph import mkPen, DateAxisItem, LegendItem
 from pyqtgraph.graphicsItems.ScatterPlotItem import Symbols
 
 from connection_input_form import ConnectionInputForm
+from display_options_form import DisplayOptionsForm
 from progress_bar_dialog import ProgressDialog
+from qt_graph.custom_scatter_plot import CustomScatterPlot
 from resources.MainWindow_ui import Ui_MainWindow
 from random import randint
 import pyqtgraph as pg
 
-from serial_thread import SerialThread
+from serial_thread import SerialThread, DataFrame
 
 from byte_operations import int16_into_two_ints, two_ints_into16
 
@@ -36,6 +41,20 @@ class PackageCodes(Enum):
     TEST = 21
 
 
+def timestamp(dt: datetime):
+    return int(time.mktime(dt.timetuple()))
+
+
+class TimeAxisItem(pg.AxisItem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setLabel(text='Time', units=None)
+        self.enableAutoSIPrefix(False)
+
+    def tickStrings(self, values, scale, spacing):
+        return [datetime.datetime.fromtimestamp(value).strftime("%H:%M:%S") for value in values]
+
+
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
@@ -45,12 +64,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui = Ui_MainWindow()
         self.__ui.setupUi(self)
 
+        self.__ui.plot_widget.showGrid(x=True, y=True)
+        self.__ui.plot_widget.setAxisItems({'bottom': TimeAxisItem(orientation='bottom')})
+        self.__x_range = 0
+
+        self.__scatter = CustomScatterPlot()
+
         self.__local_filename = 'data.bdt'
-        self.__file_size = 0
-        self.__already_downloaded = 0
-        self.__buffer: bytes = b''
 
         self.__is_connected = False
+
+        self.__is_end_of_cycle = False
 
         # self.setWindowTitle("PyQt5 QTableView")
         # self.setGeometry(500, 400, 500, 300)
@@ -59,59 +83,112 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui.action_3.triggered.connect(self.__action_import)
         self.__ui.action_4.triggered.connect(self.__connect)
         self.__ui.action_5.triggered.connect(self.__erase_sd)
-        self.__ui.action_2.triggered.connect(self.__test)
-        self.__ui.action.triggered.connect(self.__download)
         self.__ui.pushButton.clicked.connect(self.__start_cycle)
+        self.__ui.action_6.triggered.connect(self.__display_options)
 
         self.__serial_thread: SerialThread = SerialThread()
 
-        self.data = {}
+        self.__data = {}
         self.show()
-    def __test(self):
-        self.__serial_thread.write({
-            "code": PackageCodes.TEST.value
-        })
-    def __handle_json_data_received(self, data: dict):
-        print('Received form serial:', data, type(data))
-        if data["code"] == PackageCodes.DATA.value:
-            self.__update_table(data)
-        elif data["code"] == PackageCodes.START_DOWNLOAD.value:
-            self.__serial_thread.set_mode_to_bytes()
-        elif data["code"] == PackageCodes.FILE_SIZE.value:
-            print('WTF', data)
-            self.__file_size = data["file_size"]
 
-    def __handle_bytes_data_received(self, data: bytes):
-        # TODO: Сепарировать логику загрузки
-        self.__already_downloaded += len(data)
-        self.progress_dialog.update_progress(round((self.__already_downloaded - 1) / self.__file_size * 100))
-        self.__buffer += data
-        if data[-1] == 0xa0:
-            print('STOPED')
-            self.__serial_thread.set_mode_to_json()
-            with open(self.__local_filename, 'wb') as file:
-                file.write(self.__buffer[:-1])
-            self.__buffer = b''
-            self.__already_downloaded = 0
-            self.__file_size = 0
+    def __display_options(self):
+        self.__display_options_form = DisplayOptionsForm()
+        self.__display_options_form.apply_display_options.connect(self.__apply_display_options)
+        self.__display_options_form.show()
 
+    def __apply_display_options(self, check, count):
+        if check:
+            self.__x_range = 0
+        else:
+            self.__x_range = count
+
+    def __append_data_frame_to_cache(self, data_frame: DataFrame):
+        for cell_num in range(1, 17):
+            cell_voltage = data_frame.voltages[cell_num - 1]
+            cell_wh = data_frame.whs[cell_num - 1]
+
+            if cell_num in self.__data:
+                self.__data[cell_num][0].append(timestamp(data_frame.time))
+                self.__data[cell_num][1].append(cell_voltage)
+                self.__data[cell_num][2].append(cell_wh)
+                n = len(self.__data[cell_num][0])
+
+                if 0 < self.__x_range < n:
+                    self.__data[cell_num] = (
+                        self.__data[cell_num][0][-self.__x_range:],
+                        self.__data[cell_num][1][-self.__x_range:],
+                        self.__data[cell_num][2][-self.__x_range:]
+                    )
+            else:
+                self.__data[cell_num] = (
+                    [timestamp(data_frame.time)],
+                    [cell_voltage],
+                    [cell_wh]
+                )
+
+    def __point_clicked(self, plot, ev):
+        # This function is called when a point is clicked
+
+        # We can use .pointsAt to get a list of all points under the cursor:
+        points = self.__scatter.pointsAt(ev.pos())
+        if len(points) > 0:
+            point = points[0]
+            self.__ui.label_WH_out.setText(str(point.data()))
+
+    def __add_scatter_plot(self, row):
+        self.__scatter = CustomScatterPlot(
+            size=20, brush=pg.mkBrush(30, 255, 35, 255))
+        self.__scatter.setData([
+            {
+                'pos': [x, y],
+                'data': d
+            }
+            for x, y, d in zip(self.__data[row][0], self.__data[row][1], self.__data[row][2])
+        ])
+        self.__ui.plot_widget.plot(self.__data[row][0], self.__data[row][1])
+        self.__ui.plot_widget.addItem(self.__scatter)
+        self.__scatter.sigClicked.connect(self.__point_clicked)
+
+    def __handle_data_received(self, data_frame: DataFrame):
+        if not self.__local_filename:
+            return
+        if not self.__is_end_of_cycle:
+            json_str = jsons.dumps(data_frame)
+            with open(self.__local_filename, 'a') as file:
+                file.write(json_str + '\n')
+        self.__append_data_frame_to_cache(data_frame)
+
+        self.__ui.plot_widget.clear()
+
+        row = self.__ui.tableWidget.currentRow()
+        row = 1 if row < 1 else row
+        self.__add_scatter_plot(row)
+        self.__update_table(data_frame)
 
     def __closeEvent(self, event):
         self.__serial_thread.stop()
         self.__serial_thread.wait()
 
     def __start_cycle(self):
+        self.__is_end_of_cycle = False
+        file_names = QFileDialog.getSaveFileName(self, 'Save file', './')
+
+        if file_names[0]:
+            self.__local_filename = file_names[0]
+        else:
+            raise FileNotFoundError()
+
         threshold = float(self.__ui.lineEdit_3.text())
-        self.__serial_thread.write({
-            "code": PackageCodes.SETTING_THRESHOLD.value,
-            "threshold": threshold
-        })
+        self.__serial_thread.set_threshold(threshold)
+
+        self.__serial_thread.pause()
+        self.__serial_thread.command_auth()
+        self.__serial_thread.command_discharge_on()
+        self.__serial_thread.resume()
 
     def __erase_sd(self):
         print('erasing sd card...')
-        self.__serial_thread.write({
-            "code": PackageCodes.ERASE_FILE.value
-        })
+        ...
 
     def __connect(self):
         self.__connection_input_form = ConnectionInputForm()
@@ -120,34 +197,30 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __received_connection_data(self, port, baud_rate):
         self.__serial_thread = SerialThread(port, baud_rate)
-        self.__serial_thread.json_data_received.connect(self.__handle_json_data_received)
-        self.__serial_thread.bytes_data_received.connect(self.__handle_bytes_data_received)
+        self.__serial_thread.data_received.connect(self.__handle_data_received)
+        self.__serial_thread.end_cycle.connect(self.__end_of_cycle)
+        self.__serial_thread.connect()
+        self.__serial_thread.command_auth()
         self.__serial_thread.start()
 
-    def __update_table(self, data: dict):
-        amperage = float(data['amperage'])
-        current_time = float(data['current_time'])
-        self.__ui.label_time_out.setText(str(round(current_time, 3)))
-        self.__ui.label_amperage_out.setText(str(round(amperage, 3)))
-        for i in range(1, 17):
-            self.__ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(i)))
-            self.__ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(round(data['voltages'][i - 1], 3))))
-            self.__ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(round(data['whs'][i - 1], 3))))
+    def __end_of_cycle(self):
+        QMessageBox.information(None, 'Оповещение', f'Конец цикла')
 
-    def __download(self):
-        self.__serial_thread.write({
-            "code": PackageCodes.INIT_DOWNLOAD.value
-        })
-
-        self.progress_dialog = ProgressDialog()
-        self.progress_dialog.show()
+    def __update_table(self, data_frame: DataFrame):
+        self.__ui.label_time_out.setText(data_frame.time.strftime('%H:%M:%S'))
+        self.__ui.label_amperage_out.setText(str(round(data_frame.amperage, 3)))
+        for i in range(16):
+            self.__ui.tableWidget.setItem(i + 1, 0, QTableWidgetItem(str(i + 1)))
+            self.__ui.tableWidget.setItem(i + 1, 1, QTableWidgetItem(str(round(data_frame.voltages[i], 3))))
+            self.__ui.tableWidget.setItem(i + 1, 2, QTableWidgetItem(str(round(data_frame.whs[i], 3))))
 
     def __action_import(self):
-        self.data = {}
+        self.__data = {}
 
         file_name = QFileDialog.getOpenFileName(self, 'Open file',
                                                 'c:\\', "BMS data files (*.bdt)")
         print(file_name[0])
+
         with open(file_name[0]) as f:
             while True:
                 line = f.readline()
@@ -155,25 +228,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 if not line:
                     break
 
-                line_data = line.split(';')
-                current_time = float(line_data[0])
-                amperage = float(line_data[1])
-
-                for cell_num in range(1, 17):
-                    cell_voltage = float(float(line_data[cell_num + 1]))
-
-                    if cell_num in self.data:
-                        self.data[cell_num][0].append(current_time)
-                        self.data[cell_num][1].append(cell_voltage)
-                    else:
-                        self.data[cell_num] = ([current_time], [cell_voltage])
+                data_frame = jsons.loads(line, DataFrame)
+                self.__append_data_frame_to_cache(data_frame)
 
     def table_clicked(self, item):
+        row = item.row()
         self.__ui.plot_widget.clear()
-        self.__ui.tableWidget.selectRow(item.row())
-        self.__ui.plot_widget.plot(self.data[item.row()][0], self.data[item.row()][1])
-
-        print("You clicked on {0}x{1}".format(item.column(), item.row()))
+        self.__ui.tableWidget.selectRow(row)
+        self.__add_scatter_plot(row)
 
     def setup_cells_table(self):
         self.__ui.tableWidget.clicked.connect(self.table_clicked)
