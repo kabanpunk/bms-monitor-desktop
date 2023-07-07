@@ -106,7 +106,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__ui.action_3.triggered.connect(self.__action_import)
         self.__ui.action_4.triggered.connect(self.__connect)
         self.__ui.action_5.triggered.connect(self.__erase_sd)
-        self.__ui.pushButton.clicked.connect(self.__start_cycle)
+        self.__ui.pushButton_start_cycle.clicked.connect(self.__start_cycle)
+        self.__ui.pushButton_end_cycle.clicked.connect(self.__end_cycle)
         self.__ui.action_6.triggered.connect(self.__display_options)
 
         self.__serial_thread: SerialThread = SerialThread()
@@ -202,6 +203,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__serial_thread.stop()
         self.__serial_thread.wait()
 
+    def __end_cycle(self):
+        self.__is_end_of_cycle = True
+        self.__serial_thread.pause()
+        self.__serial_thread.command_auth()
+        self.__serial_thread.command_discharge_off()
+        self.__serial_thread.resume()
+
     def __start_cycle(self):
         self.__is_end_of_cycle = False
         file_names = QFileDialog.getSaveFileName(self, 'Save file', './')
@@ -245,7 +253,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(16):
             self.__ui.tableWidget.setItem(i + 1, 0, QTableWidgetItem(str(i + 1)))
             self.__ui.tableWidget.setItem(i + 1, 1, QTableWidgetItem(str(round(data_frame.voltages[i], 3))))
-            self.__ui.tableWidget.setItem(i + 1, 2, QTableWidgetItem(str(round(data_frame.whs[i], 3))))
+            self.__ui.tableWidget.setItem(i + 1, 2, QTableWidgetItem(str(round(data_frame.sums_whs[i], 3))))
 
     def __action_import(self):
         self.__data = {}

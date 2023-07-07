@@ -55,6 +55,7 @@ def auto_flush(func):
 class DataFrame:
     voltages: list[float]
     whs: list[float]
+    sums_whs: list[float]
     amperage: float
     time: datetime
 
@@ -75,12 +76,17 @@ class SerialThread(QThread):
         self.__is_end_cells = [0] * 16
         self.__threshold = 0
         self.__is_end_cycle = False
+        self.__sums_whs = [0] * 16
 
     def set_threshold(self, value: float):
         self.__threshold = value
 
+    def complete_cycle(self):
+        self.__is_end_cycle = True
+
     def run(self):
         self.__running = True
+        self.__is_end_cycle = False
         self.__last_dataframe_time: datetime = datetime.now()
         while self.__running:
             if not self.__pause:
@@ -121,12 +127,12 @@ class SerialThread(QThread):
 
                     if not self.__is_end_cells[idx]:
                         self.__whs[idx] = whs[idx]
-
-
+                        self.__sums_whs[idx] += whs[idx]
 
                 data_frame = DataFrame(
                     voltages=voltages,
                     whs=whs,
+                    sums_whs=self.__sums_whs,
                     amperage=amperage,
                     time=time_now
                 )
