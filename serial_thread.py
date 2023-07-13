@@ -92,7 +92,6 @@ class SerialThread(QThread):
         self.__threshold = 0
         self.__is_end_cycle = False
         self.__sums_whs = [0] * 16
-        self.__prev_data_frame: DataFrame = DataFrame()
 
     def set_threshold(self, value: float):
         self.__threshold = value
@@ -127,21 +126,14 @@ class SerialThread(QThread):
                     cell_voltage = two_ints_into16(bytes_data[i + 1], bytes_data[i]) / 1000
 
                     if cell_voltage < self.__threshold and not self.__is_end_cells[idx]:
-                        if idx < len(self.__prev_data_frame.voltages):
-                            logger.info(
-                                f'cell_voltage: {cell_voltage}, diff: {abs(self.__prev_data_frame.voltages[idx] - cell_voltage)}')
-                            if abs(self.__prev_data_frame.voltages[idx] - cell_voltage) > 0.001:
-                                logger.info('The threshold was reached, but too large a voltage spike was detected, '
-                                            'so the packet was not counted')
-                            else:
-                                logger.info('Ending the cycle, sending a signal to the main thread')
-                                logger.info(f'self.__is_end_cycle: {self.__is_end_cycle}')
+                        logger.info('Ending the cycle, sending a signal to the main thread')
+                        logger.info(f'self.__is_end_cycle: {self.__is_end_cycle}')
 
-                                self.__is_end_cells[idx] = True
+                        self.__is_end_cells[idx] = True
 
-                                if not self.__is_end_cycle:
-                                    self.__is_end_cycle = True
-                                    self.end_cycle.emit()
+                        if not self.__is_end_cycle:
+                            self.__is_end_cycle = True
+                            self.end_cycle.emit()
                     wh = (amperage * cell_voltage * dt.total_seconds()) / 3600.
                     voltages.append(cell_voltage)
                     whs.append(wh)
@@ -157,7 +149,7 @@ class SerialThread(QThread):
                     amperage=amperage,
                     time=time_now
                 )
-                self.__prev_data_frame = data_frame
+
                 self.__last_dataframe_time = time_now
                 self.data_received.emit(data_frame)
                 QThread.msleep(1000)
