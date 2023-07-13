@@ -311,6 +311,7 @@ class Ui_MainWindow(object):
         self.menu.addAction(self.action_2)
         self.menu.addAction(self.action_3)
         self.menu.addAction(self.action_4)
+        self.menu.addAction(self.action_5)
         self.menu.addAction(self.action_6)
         self.menubar.addAction(self.menu.menuAction())
 
@@ -335,7 +336,7 @@ class Ui_MainWindow(object):
         self.action_2.setText(_translate("MainWindow", "Экспорт"))
         self.action_3.setText(_translate("MainWindow", "Иморт"))
         self.action_4.setText(_translate("MainWindow", "Установить соединение"))
-        self.action_5.setText(_translate("MainWindow", "Очистить файл"))
+        self.action_5.setText(_translate("MainWindow", "Запустить разрядку"))
         self.action_6.setText(_translate("MainWindow", "Параметры просмотра"))
 from pyqtgraph import GraphicsLayoutWidget
 from widgets.custom_table_widget import CustomQTableWidget

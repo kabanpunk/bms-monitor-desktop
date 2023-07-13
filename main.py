@@ -25,6 +25,12 @@ from byte_operations import int16_into_two_ints, two_ints_into16
 
 from enum import Enum
 
+from logger import logger
+
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning)
+
+
 
 class PackageCodes(Enum):
     SETTING_THRESHOLD = 10
@@ -94,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__plot_widget.addItem(self.__scatter)
 
         self.__local_filename = 'data.bdt'
+        self.__start_cycle_time = datetime.datetime.now()
 
         self.__is_connected = False
 
@@ -105,7 +112,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.__ui.action_3.triggered.connect(self.__action_import)
         self.__ui.action_4.triggered.connect(self.__connect)
-        self.__ui.action_5.triggered.connect(self.__erase_sd)
+        self.__ui.action_5.triggered.connect(self.__start_discharge)
         self.__ui.pushButton_start_cycle.clicked.connect(self.__start_cycle)
         self.__ui.pushButton_end_cycle.clicked.connect(self.__end_cycle)
         self.__ui.action_6.triggered.connect(self.__display_options)
@@ -158,7 +165,7 @@ class MainWindow(QtWidgets.QMainWindow):
         points = self.__scatter.pointsAt(ev.pos())
         if len(points) > 0:
             point = points[0]
-            print(point)
+            logger.info(point)
             self.__wh_label.setText(self.__wh_label_style_promt.format(point.data()))
 
     def __add_scatter_plot(self, row):
@@ -220,6 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
             raise FileNotFoundError()
 
         threshold = float(self.__ui.lineEdit_3.text())
+        self.__serial_thread.reset()
         self.__serial_thread.set_threshold(threshold)
 
         self.__serial_thread.pause()
@@ -227,9 +235,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__serial_thread.command_discharge_on()
         self.__serial_thread.resume()
 
-    def __erase_sd(self):
-        print('erasing sd card...')
-        ...
+        self.__start_cycle_time = datetime.datetime.now()
+
+    def __start_discharge(self):
+        self.__serial_thread.pause()
+        self.__serial_thread.command_auth()
+        self.__serial_thread.command_discharge_on()
+        self.__serial_thread.resume()
 
     def __connect(self):
         self.__connection_input_form = ConnectionInputForm()
@@ -245,10 +257,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.__serial_thread.start()
 
     def __end_of_cycle(self):
+        logger.info('End of cycle signal handler')
+        self.__end_cycle()
         QMessageBox.information(None, 'Оповещение', f'Конец цикла')
 
     def __update_table(self, data_frame: DataFrame):
-        self.__ui.label_time_out.setText(data_frame.time.strftime('%H:%M:%S'))
+        if not self.__serial_thread.is_end_cycle():
+            diff_time = data_frame.time - self.__start_cycle_time
+            total_seconds = int(diff_time.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            self.__ui.label_time_out.setText("{:02}:{:02}:{:02}".format(hours, minutes, seconds))
         self.__ui.label_amperage_out.setText(str(round(data_frame.amperage, 3)))
         for i in range(16):
             self.__ui.tableWidget.setItem(i + 1, 0, QTableWidgetItem(str(i + 1)))
@@ -260,7 +279,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         file_name = QFileDialog.getOpenFileName(self, 'Open file',
                                                 'c:\\', "BMS data files (*.bdt)")
-        print(file_name[0])
+        logger.info(file_name[0])
 
         with open(file_name[0]) as f:
             while True:
@@ -270,7 +289,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     break
 
                 data_frame = jsons.loads(line, DataFrame)
-                self.__append_data_frame_to_cache(data_frame)
+                try:
+                    self.__append_data_frame_to_cache(data_frame)
+                except:
+                    logger.error('Invalid DataFrame from file')
+
 
     def table_clicked(self, item):
         row = item.row()

@@ -391,6 +391,7 @@ QStatusBar {
     <addaction name="action_2"/>
     <addaction name="action_3"/>
     <addaction name="action_4"/>
+    <addaction name="action_5"/>
     <addaction name="action_6"/>
    </widget>
    <addaction name="menu"/>
@@ -418,7 +419,7 @@ QStatusBar {
   </action>
   <action name="action_5">
    <property name="text">
-    <string>Очистить файл</string>
+    <string>Запустить разрядку</string>
    </property>
   </action>
   <action name="action_6">
